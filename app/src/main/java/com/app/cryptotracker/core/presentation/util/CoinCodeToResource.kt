@@ -1,7 +1,16 @@
-package com.app.cryptotracker.util
+package com.app.cryptotracker.core.presentation.util
 
 import com.app.cryptotracker.R
 
+/**
+ * getDrawableIdForCoin returns the drawable resource ID for a given coin symbol.
+ *
+ * This function maps a cryptocurrency's symbol (e.g., "BTC", "ETH") to its corresponding drawable resource ID.
+ * It uses a when expression to handle the mapping, and returns a default drawable if the symbol is not found.
+ *
+ * @param symbol The symbol of the cryptocurrency.
+ * @return The drawable resource ID for the coin, or a default drawable if the symbol is not found.
+ */
 fun getDrawableIdForCoin(symbol: String): Int {
     return when (symbol.uppercase()) {
         "1INCH" -> R.drawable._inch
@@ -672,6 +681,7 @@ fun getDrawableIdForCoin(symbol: String): Int {
         "ZIL" -> R.drawable.zil
         "ZKS" -> R.drawable.zks
         "ZRX" -> R.drawable.zrx
+        // Default case if the symbol is not found.
         else -> R.drawable.question_sign
     }
 }
