@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.app.cryptotracker.crypto.domain.Coin
 import com.app.cryptotracker.crypto.presentation.models.CoinUi
-import com.app.cryptotracker.crypto.presentation.models.toUi
+import com.app.cryptotracker.crypto.presentation.models.toCoinUi
 import com.app.cryptotracker.ui.theme.CryptoTrackerTheme
 
 /**
@@ -140,4 +140,4 @@ internal val previewCoin = Coin(
     marketCapUsd = 123456789.0,
     priceUsd = 12345.67,
     changePercent24Hr = -0.1,
-).toUi()
+).toCoinUi()

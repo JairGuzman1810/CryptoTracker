@@ -1,8 +1,8 @@
 package com.app.cryptotracker.crypto.presentation.models
 
 import androidx.annotation.DrawableRes
-import com.app.cryptotracker.crypto.domain.Coin
 import com.app.cryptotracker.core.presentation.util.getDrawableIdForCoin
+import com.app.cryptotracker.crypto.domain.Coin
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -55,7 +55,7 @@ data class DisplayableNumber(
  * @receiver The Coin object to be converted.
  * @return A CoinUi object with formatted data and the icon resource.
  */
-fun Coin.toUi(): CoinUi {
+fun Coin.toCoinUi(): CoinUi {
     // Creates and returns a CoinUi object with the formatted data.
     return CoinUi(
         id = id,
