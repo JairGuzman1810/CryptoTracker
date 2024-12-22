@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.cryptotracker.core.presentation.util.ObserveAsEvent
 import com.app.cryptotracker.core.presentation.util.toString
+import com.app.cryptotracker.crypto.presentation.coin_detail.CoinDetailScreen
 import com.app.cryptotracker.crypto.presentation.coin_list.CoinListEvent
 import com.app.cryptotracker.crypto.presentation.coin_list.CoinListScreen
 import com.app.cryptotracker.crypto.presentation.coin_list.CoinListViewModel
@@ -70,11 +71,26 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
-                    // Displays the CoinListScreen with the current state.
-                    CoinListScreen(
-                        state = state,
-                        modifier = Modifier.padding(innerPadding),
-                    )
+
+                    // Conditional UI based on the state.
+                    when {
+                        // If a coin is selected, display the CoinDetailScreen.
+                        state.selectedCoin != null -> {
+                            CoinDetailScreen(
+                                state = state,
+                                modifier = Modifier.padding(innerPadding),
+                            )
+                        }
+                        // Otherwise, display the CoinListScreen.
+                        else -> {
+                            // Displays the CoinListScreen with the current state.
+                            CoinListScreen(
+                                state = state,
+                                modifier = Modifier.padding(innerPadding),
+                                onAction = viewModel::onAction // Passes the onAction lambda to the CoinListScreen.
+                            )
+                        }
+                    }
                 }
             }
         }

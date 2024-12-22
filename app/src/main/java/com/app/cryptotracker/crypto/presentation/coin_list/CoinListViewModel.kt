@@ -65,16 +65,21 @@ class CoinListViewModel(
     val events = _events.receiveAsFlow()
 
     /**
-     * onAction handles user actions (Intents).
+     * onAction handles user actions (Intents) for the coin list screen.
      *
-     * This function processes user actions and updates the state accordingly.
+     * This function processes user actions, such as clicking on a coin, and updates the state accordingly.
      *
      * @param action The user action to handle.
      */
     fun onAction(action: CoinListAction) {
         when (action) {
             is CoinListAction.OnCoinClick -> {
-                // TODO: Handle coin click action
+                // Update the state with the selected coin.
+                _state.update {
+                    it.copy(
+                        selectedCoin = action.coinUi
+                    )
+                }
             }
         }
     }
@@ -102,7 +107,7 @@ class CoinListViewModel(
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            coins = coins.map { it.toCoinUi() }
+                            coins = coins.map { coin -> coin.toCoinUi() } // Map each coin to its UI representation.
                         )
                     }
                 }

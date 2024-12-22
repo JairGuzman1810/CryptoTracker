@@ -26,11 +26,13 @@ import com.app.cryptotracker.ui.theme.CryptoTrackerTheme
  * It uses a LazyColumn to efficiently display a potentially large list of coins.
  *
  * @param state The CoinListState object containing the data to display.
+ * @param onAction A lambda function to handle user actions on the coin list screen.
  * @param modifier The modifier to be applied to the root layout of the coin list screen.
  */
 @Composable
 fun CoinListScreen(
     state: CoinListState,
+    onAction: (CoinListAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
     // Displays a loading indicator if the data is still loading.
@@ -53,11 +55,14 @@ fun CoinListScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             // Iterates over the list of coins.
-            items(state.coins) { coin ->
+            items(state.coins) { coinUi ->
                 // Displays a single coin item.
                 CoinListItem(
-                    coin = coin,
-                    onClick = { /*TODO: Handle coin click*/ },
+                    coin = coinUi,
+                    onClick = {
+                        // Call the onAction lambda with the OnCoinClick action.
+                        onAction(CoinListAction.OnCoinClick(coinUi))
+                    },
                     modifier = Modifier.fillMaxWidth()
                 )
                 // Adds a horizontal divider between the coin items.
@@ -83,7 +88,8 @@ private fun CoinListScreenPreview() {
                 }
             ),
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.background)
+                .background(MaterialTheme.colorScheme.background),
+            onAction = {}
         )
     }
 }
