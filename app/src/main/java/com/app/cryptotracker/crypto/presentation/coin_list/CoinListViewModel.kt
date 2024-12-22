@@ -6,9 +6,11 @@ import com.app.cryptotracker.core.domain.util.onError
 import com.app.cryptotracker.core.domain.util.onSuccess
 import com.app.cryptotracker.crypto.domain.CoinDataSource
 import com.app.cryptotracker.crypto.presentation.models.toCoinUi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -46,6 +48,21 @@ class CoinListViewModel(
             SharingStarted.WhileSubscribed(5000L), // Keep the flow alive for 5 seconds after the last subscriber unsubscribes.
             CoinListState() // Initial state.
         )
+
+    /**
+     * _events is a private Channel used to emit one-off events from the ViewModel to the UI.
+     *
+     * It's private to prevent external modification and is used internally to send events.
+     */
+    private val _events = Channel<CoinListEvent>()
+
+    /**
+     * events is a Flow that exposes the one-off events emitted by the ViewModel.
+     *
+     * It's derived from _events and is exposed as a read-only property.
+     * The UI can collect this Flow to receive events.
+     */
+    val events = _events.receiveAsFlow()
 
     /**
      * onAction handles user actions (Intents).
@@ -89,13 +106,11 @@ class CoinListViewModel(
                         )
                     }
                 }
-                .onError {
+                .onError { error ->
                     // Update the state to not loading in case of error.
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                        )
-                    }
+                    _state.update { it.copy(isLoading = false) }
+                    // Send an error event to the UI.
+                    _events.send(CoinListEvent.Error(error))
                 }
         }
     }
