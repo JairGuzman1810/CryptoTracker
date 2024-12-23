@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.app.cryptotracker.core.domain.util.onError
 import com.app.cryptotracker.core.domain.util.onSuccess
 import com.app.cryptotracker.crypto.domain.CoinDataSource
+import com.app.cryptotracker.crypto.presentation.models.CoinUi
 import com.app.cryptotracker.crypto.presentation.models.toCoinUi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.ZonedDateTime
 
 /**
  * CoinListViewModel is the ViewModel for the coin list screen.
@@ -74,13 +76,43 @@ class CoinListViewModel(
     fun onAction(action: CoinListAction) {
         when (action) {
             is CoinListAction.OnCoinClick -> {
-                // Update the state with the selected coin.
-                _state.update {
-                    it.copy(
-                        selectedCoin = action.coinUi
-                    )
-                }
+                // Call the selectCoin function when a coin is clicked.
+                selectCoin(action.coinUi)
             }
+        }
+    }
+
+    /**
+     * selectCoin handles the selection of a coin.
+     *
+     * This function updates the state to reflect the selected coin and fetches the coin's price history.
+     *
+     * @param coinUi The selected coin.
+     */
+    private fun selectCoin(coinUi: CoinUi) {
+        // Update the state to reflect the selected coin.
+        _state.update {
+            it.copy(
+                selectedCoin = coinUi
+            )
+        }
+
+        // Launch a coroutine to fetch the coin's price history.
+        viewModelScope.launch {
+            // Fetch the coin's price history from the data source.
+            coinDataSource.getCoinHistory(
+                coinId = coinUi.id,
+                start = ZonedDateTime.now().minusDays(5), // Start date is 5 days ago.
+                end = ZonedDateTime.now() // End date is now.
+            )
+                .onSuccess { history ->
+                    // Print the history to the console for debugging.
+                    println(history)
+                }
+                .onError { error ->
+                    // Send an error event to the UI.
+                    _events.send(CoinListEvent.Error(error))
+                }
         }
     }
 
