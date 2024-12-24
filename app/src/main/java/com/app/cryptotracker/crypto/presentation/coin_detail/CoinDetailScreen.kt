@@ -1,5 +1,6 @@
 package com.app.cryptotracker.crypto.presentation.coin_detail
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -18,10 +20,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -139,6 +147,62 @@ fun CoinDetailScreen(
                     formattedText = absoluteChangeFormatted.formatted,
                     icon = if (isPositive) ImageVector.vectorResource(id = R.drawable.trending) else ImageVector.vectorResource(id = R.drawable.trending_down),
                     contentColor = contentColor24h
+                )
+            }
+
+            // Animates the visibility of the LineChart based on whether the coin has price history.
+            AnimatedVisibility(
+                visible = coin.coinPriceHistory.isNotEmpty() // The chart is visible only if the coin has price history data.
+            ) {
+                // State to hold the currently selected data point on the chart.
+                var selectedDataPoint by remember {
+                    mutableStateOf<DataPoint?>(null) // Initially, no data point is selected.
+                }
+                // State to hold the width of the x-axis labels.
+                var labelWidth by remember {
+                    mutableFloatStateOf(0f) // Initially, the label width is 0.
+                }
+                // State to hold the total width of the chart.
+                var totalChartWidth by remember {
+                    mutableFloatStateOf(0f) // Initially, the total chart width is 0.
+                }
+                // Calculates the number of data points that can be displayed based on the label width and total chart width.
+                val amountOfVisibleDataPoints = if (labelWidth > 0) {
+                    ((totalChartWidth - 2.5 * labelWidth) / labelWidth).toInt() // Calculates the number of visible data points.
+                } else {
+                    0 // If the label width is 0, no data points are visible.
+                }
+                // Calculates the starting index for the visible data points.
+                val startIndex = (coin.coinPriceHistory.lastIndex - amountOfVisibleDataPoints)
+                    .coerceAtLeast(0) // Ensures the start index is not negative.
+                // Renders the LineChart composable.
+                LineChart(
+                    dataPoints = coin.coinPriceHistory, // Provides the data points for the chart.
+                    style = ChartStyle( // Defines the visual style of the chart.
+                        chartLineColor = MaterialTheme.colorScheme.primary, // Sets the color of the chart line.
+                        unselectedColor = MaterialTheme.colorScheme.secondary.copy(
+                            alpha = 0.3f // Sets the color of unselected elements with transparency.
+                        ),
+                        selectedColor = MaterialTheme.colorScheme.primary, // Sets the color of selected elements.
+                        helperLinesThicknessPx = 5f, // Sets the thickness of helper lines.
+                        axisLinesThicknessPx = 5f, // Sets the thickness of axis lines.
+                        labelFontSize = 14.sp, // Sets the font size of labels.
+                        minYLabelSpacing = 25.dp, // Sets the minimum spacing between y-axis labels.
+                        verticalPadding = 8.dp, // Sets the vertical padding around the chart.
+                        horizontalPadding = 8.dp, // Sets the horizontal padding around the chart.
+                        xAxisLabelSpacing = 8.dp // Sets the spacing between x-axis labels.
+                    ),
+                    visibleDataPointsIndices = startIndex..coin.coinPriceHistory.lastIndex, // Sets the range of visible data points.
+                    unit = "$", // Sets the unit for the y-axis values (e.g., "$").
+                    modifier = Modifier
+                        .fillMaxWidth() // Makes the chart fill the available width.
+                        .aspectRatio(16 / 9f) // Sets the aspect ratio of the chart to 16:9.
+                        .onSizeChanged { totalChartWidth = it.width.toFloat() }, // Updates the total chart width when the size changes.
+                    selectedDataPoint = selectedDataPoint, // Provides the currently selected data point.
+                    onSelectedDataPoint = {
+                        selectedDataPoint = it // Callback to update the selected data point.
+                    },
+                    onXLabelWidthChange = { labelWidth = it } // Callback to update the label width.
                 )
             }
         }

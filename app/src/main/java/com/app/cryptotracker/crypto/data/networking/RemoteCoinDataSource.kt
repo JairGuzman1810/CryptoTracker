@@ -67,15 +67,15 @@ class RemoteCoinDataSource(
         start: ZonedDateTime,
         end: ZonedDateTime
     ): Result<List<CoinPrice>, NetworkError> {
-        // Converts the start ZonedDateTime to milliseconds since the epoch in UTC.
+        // Converts the start ZonedDateTime to milliseconds since the system's default time zone.
         val startMillis = start
-            .withZoneSameInstant(ZoneId.of("UTC"))
+            .withZoneSameInstant(ZoneId.systemDefault())
             .toInstant()
             .toEpochMilli()
 
-        // Converts the end ZonedDateTime to milliseconds since the epoch in UTC.
+        // Converts the end ZonedDateTime to milliseconds since the epoch in the system's default time zone.
         val endMillis = end
-            .withZoneSameInstant(ZoneId.of("UTC"))
+            .withZoneSameInstant(ZoneId.systemDefault())
             .toInstant()
             .toEpochMilli()
 

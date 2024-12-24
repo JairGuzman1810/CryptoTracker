@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.app.cryptotracker.core.domain.util.onError
 import com.app.cryptotracker.core.domain.util.onSuccess
 import com.app.cryptotracker.crypto.domain.CoinDataSource
+import com.app.cryptotracker.crypto.presentation.coin_detail.DataPoint
 import com.app.cryptotracker.crypto.presentation.models.CoinUi
 import com.app.cryptotracker.crypto.presentation.models.toCoinUi
 import kotlinx.coroutines.channels.Channel
@@ -16,6 +17,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /**
  * CoinListViewModel is the ViewModel for the coin list screen.
@@ -90,26 +93,42 @@ class CoinListViewModel(
      * @param coinUi The selected coin.
      */
     private fun selectCoin(coinUi: CoinUi) {
-        // Update the state to reflect the selected coin.
-        _state.update {
-            it.copy(
-                selectedCoin = coinUi
-            )
-        }
+        // Updates the state to reflect the selected coin.
+        _state.update { it.copy(selectedCoin = coinUi) }
 
         // Launch a coroutine to fetch the coin's price history.
         viewModelScope.launch {
             // Fetch the coin's price history from the data source.
-            coinDataSource.getCoinHistory(
-                coinId = coinUi.id,
-                start = ZonedDateTime.now().minusDays(5), // Start date is 5 days ago.
-                end = ZonedDateTime.now() // End date is now.
-            )
-                .onSuccess { history ->
-                    // Print the history to the console for debugging.
-                    println(history)
+            coinDataSource
+                .getCoinHistory(
+                    coinId = coinUi.id, // The ID of the selected coin.
+                    start = ZonedDateTime.now().minusDays(5), // The start date for the history (5 days ago).
+                    end = ZonedDateTime.now() // The end date for the history (now).
+                )
+                .onSuccess { history -> // Handle successful retrieval of history.
+                    // Transform the history data into a list of DataPoint objects.
+                    val dataPoints = history
+                        .sortedBy { it.dateTime } // Sort the history by date and time.
+                        .map {
+                            DataPoint(
+                                x = it.dateTime.hour.toFloat(), // Use the hour of the day as the x-coordinate.
+                                y = it.priceUsd.toFloat(), // Use the price in USD as the y-coordinate.
+                                xLabel = DateTimeFormatter
+                                    .ofPattern("ha\nM/d", Locale.ENGLISH) // Define the format for the x-axis label (hour AM/PM, Month/Day).
+                                    .format(it.dateTime) // Format the date and time for the x-axis label.
+                            )
+                        }
+
+                    // Update the state with the new price history data.
+                    _state.update {
+                        it.copy(
+                            selectedCoin = it.selectedCoin?.copy( // Update the selected coin's data.
+                                coinPriceHistory = dataPoints // Set the coin's price history to the newly created data points.
+                            )
+                        )
+                    }
                 }
-                .onError { error ->
+                .onError { error -> // Handle errors during history retrieval.
                     // Send an error event to the UI.
                     _events.send(CoinListEvent.Error(error))
                 }

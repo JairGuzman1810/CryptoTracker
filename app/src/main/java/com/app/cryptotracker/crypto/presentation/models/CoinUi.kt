@@ -3,23 +3,25 @@ package com.app.cryptotracker.crypto.presentation.models
 import androidx.annotation.DrawableRes
 import com.app.cryptotracker.core.presentation.util.getDrawableIdForCoin
 import com.app.cryptotracker.crypto.domain.Coin
+import com.app.cryptotracker.crypto.presentation.coin_detail.DataPoint
 import java.text.NumberFormat
 import java.util.Locale
 
 /**
- * CoinUi represents the UI-ready data for a cryptocurrency.
+ * CoinUi represents the UI-ready data for a cryptocurrency, tailored for display in the user interface.
  *
- * This class is used to format and prepare cryptocurrency data for display in the UI.
- * It includes formatted values for market cap, price, and change percentage,
- * as well as a drawable resource ID for the coin's icon.
+ * This data class encapsulates the essential information about a cryptocurrency that is needed for
+ * presentation in the UI. It includes formatted values for market capitalization, price, and
+ * 24-hour price change percentage, along with the coin's icon resource and price history.
  *
  * @property id The unique identifier of the coin.
- * @property rank The rank of the coin by market capitalization.
- * @property name The name of the coin (e.g., Bitcoin).
- * @property symbol The symbol of the coin (e.g., BTC).
+ * @property rank The rank of the coin based on its market capitalization.
+ * @property name The full name of the coin (e.g., "Bitcoin").
+ * @property symbol The ticker symbol of the coin (e.g., "BTC").
  * @property marketCapUsd The market capitalization of the coin in USD, formatted for display.
  * @property priceUsd The current price of the coin in USD, formatted for display.
  * @property changePercent24Hr The percentage change in the coin's price over the last 24 hours, formatted for display.
+ * @property coinPriceHistory The list of historical price data points for the coin.
  * @property iconRes The drawable resource ID for the coin's icon.
  */
 data class CoinUi(
@@ -30,6 +32,7 @@ data class CoinUi(
     val marketCapUsd: DisplayableNumber,
     val priceUsd: DisplayableNumber,
     val changePercent24Hr: DisplayableNumber,
+    val coinPriceHistory: List<DataPoint> = emptyList(),
     @DrawableRes val iconRes: Int,
 )
 

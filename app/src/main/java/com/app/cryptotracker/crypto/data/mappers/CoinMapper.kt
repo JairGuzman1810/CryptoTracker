@@ -40,8 +40,9 @@ fun CoinDto.toCoin(): Coin {
 fun CoinPriceDto.toCoinPrice(): CoinPrice {
     return CoinPrice(
         priceUsd = priceUsd,
-        // Converts the timestamp (in seconds) to an Instant and then to a ZonedDateTime in UTC.
-        dateTime = Instant.ofEpochSecond(time)
-            .atZone(ZoneId.of("UTC"))
+        // Converts the timestamp (in millis) to an Instant and then to a ZonedDateTime in UTC.
+        dateTime = Instant
+            .ofEpochMilli(time)
+            .atZone(ZoneId.systemDefault())
     )
 }
