@@ -1,23 +1,14 @@
 package com.app.cryptotracker
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.app.cryptotracker.core.presentation.util.ObserveAsEvent
-import com.app.cryptotracker.core.presentation.util.toString
-import com.app.cryptotracker.crypto.presentation.coin_detail.CoinDetailScreen
-import com.app.cryptotracker.crypto.presentation.coin_list.CoinListEvent
-import com.app.cryptotracker.crypto.presentation.coin_list.CoinListScreen
-import com.app.cryptotracker.crypto.presentation.coin_list.CoinListViewModel
+import com.app.cryptotracker.core.navigation.AdaptiveCoinListDetailPage
 import com.app.cryptotracker.ui.theme.CryptoTrackerTheme
 import org.koin.androidx.compose.koinViewModel
 
@@ -43,54 +34,18 @@ class MainActivity : ComponentActivity() {
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Enables edge-to-edge display.
+        // Enables edge-to-edge display. This allows the app to draw behind the system bars (status bar and navigation bar).
         enableEdgeToEdge()
         // Sets the content of the activity using Jetpack Compose.
         setContent {
-            CryptoTrackerTheme {
+            CryptoTrackerTheme { // Applies the CryptoTrackerTheme to the app's UI.
                 // A Scaffold provides the basic Material Design visual layout structure.
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    // Initializes the CoinListViewModel using Koin.
-                    val viewModel = koinViewModel<CoinListViewModel>()
-                    // Collects the state from the ViewModel.
-                    val state by viewModel.state.collectAsStateWithLifecycle()
-
-                    // Gets the current context for displaying Toast messages.
-                    val context = LocalContext.current
-                    // Observes events from the ViewModel.
-                    ObserveAsEvent(events = viewModel.events) { event ->
-                        // Handles different types of events.
-                        when (event) {
-                            is CoinListEvent.Error -> {
-                                // Displays a Toast message for network errors.
-                                Toast.makeText(
-                                    context,
-                                    event.error.toString(context),
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-                    }
-
-                    // Conditional UI based on the state.
-                    when {
-                        // If a coin is selected, display the CoinDetailScreen.
-                        state.selectedCoin != null -> {
-                            CoinDetailScreen(
-                                state = state,
-                                modifier = Modifier.padding(innerPadding),
-                            )
-                        }
-                        // Otherwise, display the CoinListScreen.
-                        else -> {
-                            // Displays the CoinListScreen with the current state.
-                            CoinListScreen(
-                                state = state,
-                                modifier = Modifier.padding(innerPadding),
-                                onAction = viewModel::onAction // Passes the onAction lambda to the CoinListScreen.
-                            )
-                        }
-                    }
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding -> // The Scaffold fills the entire screen.
+                    // The innerPadding is used to ensure that content is not drawn behind the system bars.
+                    AdaptiveCoinListDetailPage(
+                        modifier = Modifier.padding(innerPadding), // Applies the innerPadding to the AdaptiveCoinListDetailPage.
+                        viewModel = koinViewModel() // Injects the CoinListViewModel using Koin.
+                    )
                 }
             }
         }
